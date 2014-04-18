@@ -36,8 +36,8 @@ def main(argv=None):
         exit(0)
 
     keys = [ 
-        'http://www.apache.org/dist/ant/KEYS', 
-        'http://www.apache.org/dist/maven/KEYS', 
+        'https://www.apache.org/dist/ant/KEYS', 
+        'https://www.apache.org/dist/maven/KEYS', 
         'https://www.apache.org/dist/tomcat/tomcat-connectors/KEYS',
 	'https://www.apache.org/dist/tomcat/tomcat-7/KEYS'
     ]
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     sys.exit(main())
 
 """
-Copyright © 2013, Regents of the University of California
+Copyright © 2014, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
