@@ -41,14 +41,16 @@ def main(argv=None):
     ]
     parser = argparse.ArgumentParser( )
     parser.add_argument('-p', '--prefix', required=True)
-    parser.add_argument('-o', '--other-prefix', required=True)
+    parser.add_argument('-o', '--other-prefix', required=True, help="boost headers")
     parser.add_argument('-t', '--tempdir', required=False)
     parser.add_argument('-f', '--force', action='store_true', required=False)
 
     if argv is None:
         argv = parser.parse_args()
 
-    if os.path.isfile(os.path.join(argv.prefix,'sbin','shibd')) and not argv.force:
+    shibd_path = os.path.join(argv.prefix,'sbin','shibd')
+
+    if os.path.isfile(shibd_path) and not argv.force:
         print "been done? use -f/--force to force rebuild"
         exit(0)
 
@@ -61,7 +63,7 @@ def main(argv=None):
         mkdir_p(argv.tempdir)
         tempfile.tempdir = argv.tempdir
 
-    tmp = tempfile.mkdtemp(prefix="shib_builder")
+    tmp = tempfile.mkdtemp(prefix="shib_builder_")
     key_import(keys, tmp)
     os.chdir(tmp)
     pp(tmp)
@@ -87,6 +89,9 @@ def main(argv=None):
         subprocess.check_output(config_command.split())
         subprocess.check_output(['make'])
         subprocess.check_output(['make', 'install'])
+
+    # test the shib command when we are done
+    subprocess.check_output([shibd_path, '-t'])
 
     # save config.logs from source building tree before deleting?
     shutil.rmtree(tmp)
@@ -121,7 +126,7 @@ if __name__ == "__main__":
     sys.exit(main())
 
 """
-Copyright © 2013, Regents of the University of California
+Copyright © 2014, Regents of the University of California
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without 
