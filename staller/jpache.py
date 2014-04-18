@@ -8,7 +8,7 @@ import tempfile
 # import gnupg
 import subprocess
 import shutil
-from staller.staller import scraper, key_import
+from staller import scraper, key_import
 
 def main(argv=None):
     packages = [
