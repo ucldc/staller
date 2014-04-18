@@ -24,7 +24,7 @@ Install tomcat, ant, and maven.
 ## Install the 'staller
 
 ```
-pip install https://github.com/ucldc/staller/archive/master.zip
+pip install staller
 ```
 
 or 
