@@ -32,13 +32,18 @@ def scraper(url, package, tmp):
         doc2 = parse(urlopen(download_url)).getroot()
         download_url = doc2.xpath("//a[contains(@href,'%s')][1]/@href" % package, )[0]
     # pp(download_url)
+    md5_url = [i for i in links if i.endswith('tar.gz.md5')][0]
+    pgp_url = [i for i in links if i.endswith('tar.gz.asc')][0]
+    return checked_archive(download_url, md5_url, pgp_url, tmp)
+
+def checked_archive(download_url, md5_url, pgp_url, tmp):
     archive = downloadChunks( download_url , tmp)
-    md5_file = downloadChunks( [i for i in links if i.endswith('tar.gz.md5')][0], tmp)
+    md5_file = downloadChunks( md5_url, tmp)
     checksum = md5sum(archive)
     # make sure the checksum is correct
     print checksum
     assert(checksum in open(md5_file).read())
-    pgp_file = downloadChunks( [i for i in links if i.endswith('tar.gz.asc')][0], tmp)
+    pgp_file = downloadChunks( pgp_url, tmp)
     subprocess.check_call(["gpg", "--verify", pgp_file, archive ])
     return archive
 
