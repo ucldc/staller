@@ -16,6 +16,7 @@ setup(
     entry_points = {
         'console_scripts': [
             'shib_it = staller.shib_it:main',
+            'solr_it = staller.solr_it:main',
             'jpache = staller.jpache:main',
         ]
     }
