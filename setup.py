@@ -7,7 +7,9 @@ setup(
     install_requires = ['lxml', 'argparse'],
     # metadata for upload to PyPI
     author = "California Digital Library",
-    description = "",
+    description = ("Small application to find the latest version of a software" 
+                   "package, download it, check the PGP signature, check "
+                   "the checksums, and install it."),
     license = "BSD",
     keywords = "",
     url = "https://github.com/ucldc/staller",   # project home page, if any
