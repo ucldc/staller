@@ -20,15 +20,15 @@ def main(argv=None):
         ),
         ( 'https://xerces.apache.org/xerces-c/download.cgi', 
           'xerces-c',
-          './configure --prefix={0} --disable-netaccessor-curl --disable-transcoder-gnuiconv',
+          './configure --prefix={0} --disable-netaccessor-curl --disable-transcoder-gnuiconv --with-curl={1}',
         ),
         ( 'https://santuario.apache.org/download.html', 
           'xml-security-c',
-          './configure --without-xalan --disable-static --prefix={0} --with-xerces={0} --with-openssl=/usr',
+          './configure --without-xalan --disable-static --prefix={0} --with-xerces={0} --with-openssl={1}',
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'xmltooling',
-          './configure --with-log4shib={0} --prefix={0} -C --with-boost={1}'
+          './configure --with-log4shib={0} --prefix={0} -C --with-boost={1} --with-curl={1}'
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'opensaml',
@@ -36,7 +36,7 @@ def main(argv=None):
         ),
         ( 'https://shibboleth.net/downloads/service-provider/latest/', 
           'shibboleth-sp',
-          './configure --with-log4shib={0} --enable-apache-22 --with-apxs2={1}/sbin/apxs --prefix={0} --with-openssl=/usr --with-boost={1}/include'
+          './configure --with-log4shib={0} --enable-apache-22 --with-apxs2={1}/sbin/apxs --prefix={0} --with-openssl={1} --with-boost={1}/include'
         ),
     ]
     parser = argparse.ArgumentParser( )
@@ -68,7 +68,7 @@ def main(argv=None):
     os.chdir(tmp)
     pp(tmp)
 
-    os.environ['CFLAGS'] = os.environ['CPPFLAGS'] = "-I {0}/include".format(argv.prefix)
+    os.environ['CFLAGS'] = os.environ['CPPFLAGS'] = "-g -I {0}/include".format(argv.prefix)
     os.environ['LDFLAGS'] = "-L{0}/lib".format(argv.prefix)
     resetldpath(argv.prefix)
     #resetldpath(argv.prefix, argv.other_prefix)
@@ -92,6 +92,8 @@ def main(argv=None):
 
     # test the shib command when we are done
     subprocess.check_output([shibd_path, '-t'])
+
+    # ## somehow check the shibd for bad links
 
     # save config.logs from source building tree before deleting?
     shutil.rmtree(tmp)
