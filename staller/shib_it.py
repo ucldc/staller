@@ -24,7 +24,7 @@ def main(argv=None):
         ),
         ( 'https://santuario.apache.org/download.html', 
           'xml-security-c',
-          './configure --without-xalan --disable-static --prefix={prefix} --with-xerces={xerces} --with-openssl={openssl}',
+          './configure --without-xalan --disable-static --prefix={prefix} --with-xerces={prefix} --with-openssl={openssl}',
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'xmltooling',
@@ -45,7 +45,6 @@ def main(argv=None):
     parser.add_argument('--boost', help='leave off `/include`', required=True)
     parser.add_argument('--curl', required=True)
     parser.add_argument('--openssl', required=True)
-    parser.add_argument('--xerces', required=True)
     parser.add_argument('--apxs', help='full path to apxs', required=True)
 
     parser.add_argument('-t', '--tempdir', required=False)
