@@ -58,7 +58,6 @@ def main(argv=None):
         'prefix': argv.prefix,
         'curl': argv.curl,
         'openssl': argv.openssl,
-        'xerces': argv.xerces,
         'apxs': argv.apxs,
     }
 
