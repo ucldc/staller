@@ -16,37 +16,52 @@ def main(argv=None):
     packages = [
         ( 'https://shibboleth.net/downloads/log4shib/latest/', 
           'log4shib', 
-          './configure --disable-static --disable-doxygen --prefix={0}',
+          './configure --disable-static --disable-doxygen --prefix={prefix}',
         ),
         ( 'https://xerces.apache.org/xerces-c/download.cgi', 
           'xerces-c',
-          './configure --prefix={0} --disable-netaccessor-curl --disable-transcoder-gnuiconv --with-curl={1}',
+          './configure --prefix={prefix} --disable-netaccessor-curl --disable-transcoder-gnuiconv --with-curl={curl}',
         ),
         ( 'https://santuario.apache.org/download.html', 
           'xml-security-c',
-          './configure --without-xalan --disable-static --prefix={0} --with-xerces={0} --with-openssl={1}',
+          './configure --without-xalan --disable-static --prefix={prefix} --with-xerces={xerces} --with-openssl={openssl}',
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'xmltooling',
-          './configure --with-log4shib={0} --prefix={0} -C --with-boost={1} --with-curl={1}'
+          './configure --with-log4shib={prefix} --prefix={prefix} -C --with-boost={boost} --with-curl={curl}'
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'opensaml',
-          './configure --with-log4shib={0} --prefix={0} -C --with-boost={1}/include'
+          './configure --with-log4shib={prefix} --prefix={prefix} -C --with-boost={boost}/include'
         ),
         ( 'https://shibboleth.net/downloads/service-provider/latest/', 
           'shibboleth-sp',
-          './configure --with-log4shib={0} --enable-apache-22 --with-apxs2={1}/sbin/apxs --prefix={0} --with-openssl={1} --with-boost={1}/include'
+          # './configure --with-log4shib={prefix} --enable-apache-22 --with-apxs2={1}/sbin/apxs --prefix={0} --with-openssl={1} --with-boost={1}/include'
+          './configure --with-log4shib={prefix} --enable-apache-22 --with-apxs2={apxs} --prefix={prefix} --with-openssl={openssl} --with-boost={boost}/include'
         ),
     ]
     parser = argparse.ArgumentParser( )
     parser.add_argument('-p', '--prefix', required=True)
-    parser.add_argument('-o', '--other-prefix', required=True, help="boost headers")
+    parser.add_argument('--boost', help='leave off `/include`', required=True)
+    parser.add_argument('--curl', required=True)
+    parser.add_argument('--openssl', required=True)
+    parser.add_argument('--xerces', required=True)
+    parser.add_argument('--apxs', help='full path to apxs', required=True)
+
     parser.add_argument('-t', '--tempdir', required=False)
     parser.add_argument('-f', '--force', action='store_true', required=False)
 
     if argv is None:
         argv = parser.parse_args()
+
+    with_opts = {
+        'boost': argv.boost,
+        'prefix': argv.prefix,
+        'curl': argv.curl,
+        'openssl': argv.openssl,
+        'xerces': argv.xerces,
+        'apxs': argv.apxs,
+    }
 
     shibd_path = os.path.join(argv.prefix,'sbin','shibd')
 
@@ -63,6 +78,10 @@ def main(argv=None):
         mkdir_p(argv.tempdir)
         tempfile.tempdir = argv.tempdir
 
+    for (url, package, configure) in packages:
+        config_command = configure.format(**with_opts)
+        print config_command
+
     tmp = tempfile.mkdtemp(prefix="shib_builder_")
     key_import(keys, tmp)
     os.chdir(tmp)
@@ -74,6 +93,8 @@ def main(argv=None):
     #resetldpath(argv.prefix, argv.other_prefix)
 
     for (url, package, configure) in packages:
+        config_command = configure.format(**with_opts)
+        print config_command
         # scraper looks at the "latest download" web page, finds the newest .tar.gz, 
         # verfies MD5 checksum and and the pgp signature
         # downloads verified package to `tmp` and returns the path to the .tar.gz
@@ -84,8 +105,6 @@ def main(argv=None):
         print src_dir
         os.chdir(src_dir)
         # --with-boost=/registry/pkg/include
-        config_command = configure.format(argv.prefix, argv.other_prefix)
-        print config_command
         subprocess.check_output(config_command.split())
         subprocess.check_output(['make'])
         subprocess.check_output(['make', 'install'])
