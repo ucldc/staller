@@ -36,7 +36,6 @@ def main(argv=None):
         ),
         ( 'https://shibboleth.net/downloads/service-provider/latest/', 
           'shibboleth-sp',
-          # './configure --with-log4shib={prefix} --enable-apache-22 --with-apxs2={1}/sbin/apxs --prefix={0} --with-openssl={1} --with-boost={1}/include'
           './configure --with-log4shib={prefix} --enable-apache-22 --with-apxs2={apxs} --prefix={prefix} --with-openssl={openssl} --with-boost={boost}/include'
         ),
     ]
@@ -54,8 +53,8 @@ def main(argv=None):
         argv = parser.parse_args()
 
     with_opts = {
-        'boost': argv.boost,
         'prefix': argv.prefix,
+        'boost': argv.boost,
         'curl': argv.curl,
         'openssl': argv.openssl,
         'apxs': argv.apxs,

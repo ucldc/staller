@@ -15,11 +15,29 @@ Automate the steps do build shibboleth SP based on
 [NativeSPLinuxSourceBuild](https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxSourceBuild)
 but seems to work on OS X as well.  Seems like it would work on Solaris and BSD to.
 
+```
+usage: shib_it [-h] -p PREFIX --boost BOOST --curl CURL --openssl OPENSSL
+                  --apxs APXS [-t TEMPDIR] [-f]
+```
+
 Requires boost headers to be installed.
 
 ## `jpache`
 
-Install tomcat, ant, and maven.
+Install latest tomcat, ant, and maven.
+
+```
+usage: jpache [-h] -p PREFIX [-t TEMPDIR] [-f]
+```
+
+## `solr_it`
+
+Solr distribution is set up different from the other apache java stuff.  Must 
+specify the version of solr needed.
+
+```
+usage: solr_it [-h] -p PREFIX -v VERSION [-t TEMPDIR] [-f]
+```
 
 ## Install the 'staller
 
