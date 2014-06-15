@@ -108,11 +108,30 @@ def main(argv=None):
 
     # test the shib command when we are done
     subprocess.check_output([shibd_path, '-t'])
+    sanity_check_ldd(path)
 
     # ## somehow check the shibd for bad links
 
     # save config.logs from source building tree before deleting?
     shutil.rmtree(tmp)
+
+
+def sanity_check_ldd(path):
+    parse_ldd = re.compile('^\t(.*?)\\.')  # parse ldd outout
+    d = defaultdict(bool)
+    # look for duplicate libraries
+    try:  # ldd might not exist (as on OS X)
+        for line in subprocess.check_output(['ldd', path]).split('\n'):
+            if line == '':
+                break
+            lib = parse_ldd.search(line).group(0)
+            # http://youtu.be/SckD99B51IA?t=22s
+            assert not(lib in d), "dubious binary, ldd finds more than one {0}".format(lib)
+            d[lib] = True
+    except OSError:
+        # is this OSX? try running `otool`?
+        pass
+
 
 def resetldpath(addition):
     ldd_path = ""
