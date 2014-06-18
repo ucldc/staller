@@ -10,6 +10,9 @@ import subprocess
 import shutil
 from staller import scraper, key_import
 import errno
+import re
+from collections import defaultdict
+
 
 def main(argv=None):
     # https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxSourceBuild
@@ -108,7 +111,7 @@ def main(argv=None):
 
     # test the shib command when we are done
     subprocess.check_output([shibd_path, '-t'])
-    sanity_check_ldd(path)
+    sanity_check_ldd(shibd_path)
 
     # ## somehow check the shibd for bad links
 
