@@ -35,16 +35,16 @@ def main(argv=None):
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'opensaml',
-          './configure --with-log4shib={prefix} --prefix={prefix} -C --with-boost={boost}/include'
+          './configure --with-log4shib={prefix} --prefix={prefix} -C --with-boost={boost}'
         ),
         ( 'https://shibboleth.net/downloads/service-provider/latest/', 
           'shibboleth-sp',
-          './configure --with-log4shib={prefix} --enable-apache-22 --with-apxs2={apxs} --prefix={prefix} --with-openssl={openssl} --with-boost={boost}/include'
+          './configure --with-log4shib={prefix} --enable-apache-24 --with-apxs24={apxs} --prefix={prefix} --with-openssl={openssl} --with-boost={boost}'
         ),
     ]
     parser = argparse.ArgumentParser( )
     parser.add_argument('-p', '--prefix', required=True)
-    parser.add_argument('--boost', help='leave off `/include`', required=True)
+    parser.add_argument('--boost', required=True)
     parser.add_argument('--curl', required=True)
     parser.add_argument('--openssl', required=True)
     parser.add_argument('--apxs', help='full path to apxs', required=True)
