@@ -28,7 +28,7 @@ def scraper(url, package, tmp):
     links = doc.xpath("//a[contains(@href,'%s')]/@href" % package, )
     download_url = [i for i in links if i.endswith('.tar.gz')][0]
     # sometimes the download link does not let you download
-    if download_url.startswith('http://www.apache.org/dyn/closer.cgi'):
+    if download_url.startswith('http://www.apache.org/dyn/closer'):
         doc2 = parse(urlopen(download_url)).getroot()
         download_url = doc2.xpath("//a[contains(@href,'%s')][1]/@href" % package, )[0]
     # pp(download_url)
