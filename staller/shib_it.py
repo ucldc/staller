@@ -17,13 +17,17 @@ from collections import defaultdict
 def main(argv=None):
     # https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxSourceBuild
     packages = [
+        ( 'https://curl.haxx.se/download.html',
+          'curl',
+          './configure --disable-static --with-openssl={openssl} --prefix={prefix}',
+        ),
         ( 'https://shibboleth.net/downloads/log4shib/latest/', 
           'log4shib', 
           './configure --disable-static --disable-doxygen --prefix={prefix}',
         ),
         ( 'https://xerces.apache.org/xerces-c/download.cgi', 
           'xerces-c',
-          './configure --prefix={prefix} --disable-netaccessor-curl --disable-transcoder-gnuiconv --with-curl={curl}',
+          './configure --prefix={prefix} --disable-netaccessor-curl --disable-transcoder-gnuiconv --with-curl={prefix}',
         ),
         ( 'https://santuario.apache.org/download.html', 
           'xml-security-c',
@@ -31,7 +35,7 @@ def main(argv=None):
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'xmltooling',
-          './configure --with-log4shib={prefix} --prefix={prefix} -C --with-boost={boost} --with-curl={curl}'
+          './configure --with-log4shib={prefix} --prefix={prefix} -C --with-boost={boost} --with-curl={prefix}'
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'opensaml',
@@ -45,7 +49,6 @@ def main(argv=None):
     parser = argparse.ArgumentParser( )
     parser.add_argument('-p', '--prefix', required=True)
     parser.add_argument('--boost', required=True)
-    parser.add_argument('--curl', required=True)
     parser.add_argument('--openssl', required=True)
     parser.add_argument('--apxs', help='full path to apxs', required=True)
 
@@ -58,7 +61,6 @@ def main(argv=None):
     with_opts = {
         'prefix': argv.prefix,
         'boost': argv.boost,
-        'curl': argv.curl,
         'openssl': argv.openssl,
         'apxs': argv.apxs,
     }
@@ -71,7 +73,8 @@ def main(argv=None):
 
     keys = [ 
         'https://www.apache.org/dist/santuario/KEYS', 
-        'https://www.apache.org/dist/xerces/c/KEYS', 
+        'https://www.apache.org/dist/xerces/c/KEYS',
+        'https://daniel.haxx.se/mykey.asc'
     ]
 
     if argv.tempdir:
