@@ -83,7 +83,6 @@ def main(argv=None):
 
     for (url, package, configure) in packages:
         config_command = configure.format(**with_opts)
-        print config_command
 
     tmp = tempfile.mkdtemp(prefix="shib_builder_")
     key_import(keys, tmp)
@@ -92,6 +91,7 @@ def main(argv=None):
 
     os.environ['CFLAGS'] = os.environ['CPPFLAGS'] = "-g -I {0}/include".format(argv.prefix)
     os.environ['LDFLAGS'] = "-L{0}/lib".format(argv.prefix)
+    os.environ['PKG_CONFIG_PATH'] = "{}/lib/pkgconfig".format(argv.prefix)
     resetldpath(argv.prefix)
     #resetldpath(argv.prefix, argv.other_prefix)
 
@@ -99,7 +99,7 @@ def main(argv=None):
         config_command = configure.format(**with_opts)
         print config_command
         # scraper looks at the "latest download" web page, finds the newest .tar.gz, 
-        # verfies MD5 checksum and and the pgp signature
+        # verfies sha-256 checksum and and the pgp signature
         # downloads verified package to `tmp` and returns the path to the .tar.gz
         archive = scraper(url, package, tmp)
         os.chdir(tmp)
