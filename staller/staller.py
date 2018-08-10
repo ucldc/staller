@@ -31,26 +31,26 @@ def scraper(url, package, tmp):
     if download_url.startswith('http://www.apache.org/dyn/closer'):
         doc2 = parse(urlopen(download_url)).getroot()
         download_url = doc2.xpath("//a[contains(@href,'%s')][1]/@href" % package, )[0]
-    # pp(download_url)
-    md5_url = [i for i in links if i.endswith('tar.gz.md5')][0]
+    sha256_url = [i for i in links if i.endswith('tar.gz.sha256')][0]
     pgp_url = [i for i in links if i.endswith('tar.gz.asc')][0]
-    return checked_archive(download_url, md5_url, pgp_url, tmp)
+    return checked_archive(download_url, sha256_url, pgp_url, tmp)
 
-def checked_archive(download_url, md5_url, pgp_url, tmp):
+def checked_archive(download_url, sha256_url, pgp_url, tmp):
     archive = downloadChunks( download_url , tmp)
-    md5_file = downloadChunks( md5_url, tmp)
-    checksum = md5sum(archive)
+    sha256_file = downloadChunks( sha256_url, tmp)
+    checksum = sha256sum(archive)
     # make sure the checksum is correct
     print checksum
-    assert(checksum in open(md5_file).read())
-    pgp_file = downloadChunks( pgp_url, tmp)
+    # TODO -- assert used wrong here
+    assert(checksum in open(sha256_file).read())
+    pgp_file = downloadChunks(pgp_url, tmp)
     subprocess.check_call(["gpg", "--verify", pgp_file, archive ])
     return archive
 
-def md5sum(filename):
+def sha256sum(filename):
     # http://stackoverflow.com/a/7829658/1763984
     with open(filename, mode='rb') as f:
-        d = hashlib.md5()
+        d = hashlib.sha256()
         for buf in iter(partial(f.read, 128), b''):
             d.update(buf)
     return d.hexdigest()
