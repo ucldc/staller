@@ -17,9 +17,9 @@ def key_import(urls, tmp):
         subprocess.check_call(["gpg", "--import", keys])
 
 def scraper(url, package, tmp):
-    """find and validate source tar.gz with md5 and pgp signatures
-    searches for links to the 'package' on the 'url', downloads the .tar.gz, .tar.gz.md5, and .tar.gz.asc
-    uses the .tar.gz.md5 and the .tar.gz.asc to validate the .tar.gz
+    """find and validate source tar.gz with sha-256 and pgp signatures
+    searches for links to the 'package' on the 'url', downloads the .tar.gz, .tar.gz.sha256, and .tar.gz.asc
+    uses the .tar.gz.sha256 or metalink and the .tar.gz.asc to validate the .tar.gz
     returns the path to the .tar.gz file inside of 'tmp'
     """
     # print "%s %s" % ( url, package )
@@ -31,18 +31,19 @@ def scraper(url, package, tmp):
     if download_url.startswith('http://www.apache.org/dyn/closer'):
         doc2 = parse(urlopen(download_url)).getroot()
         download_url = doc2.xpath("//a[contains(@href,'%s')][1]/@href" % package, )[0]
-    sha256_url = [i for i in links if i.endswith('tar.gz.sha256')][0]
+    sha256_url = [i for i in links if i.endswith(('tar.gz.sha256', 'metalink.cgi?curl=tar.gz'))][0]
+    sha256_file = downloadChunks(sha256_url, tmp)
+    remote_sha256 = open(sha256_file).read()
     pgp_url = [i for i in links if i.endswith('tar.gz.asc')][0]
-    return checked_archive(download_url, sha256_url, pgp_url, tmp)
+    return checked_archive(download_url, remote_sha256, pgp_url, tmp)
 
-def checked_archive(download_url, sha256_url, pgp_url, tmp):
-    archive = downloadChunks( download_url , tmp)
-    sha256_file = downloadChunks( sha256_url, tmp)
+def checked_archive(download_url, remote_sha256, pgp_url, tmp):
+    archive = downloadChunks(download_url, tmp)
     checksum = sha256sum(archive)
     # make sure the checksum is correct
     print checksum
     # TODO -- assert used wrong here
-    assert(checksum in open(sha256_file).read())
+    assert(checksum in remote_sha256)
     pgp_file = downloadChunks(pgp_url, tmp)
     subprocess.check_call(["gpg", "--verify", pgp_file, archive ])
     return archive
