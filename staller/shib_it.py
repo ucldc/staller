@@ -31,19 +31,19 @@ def main(argv=None):
         ),
         ( 'https://santuario.apache.org/download.html', 
           'xml-security-c',
-          './configure --without-xalan --disable-static --prefix={prefix} --with-xerces={prefix} --with-openssl={openssl}',
+          './configure --without-xalan --disable-static --prefix={prefix} --with-openssl={openssl}',
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'xmltooling',
-          './configure --with-log4shib={prefix} --prefix={prefix} -C --with-boost={boost} --with-curl={prefix}'
+          './configure --prefix={prefix} -C --with-boost={boost}'
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'opensaml',
-          './configure --with-log4shib={prefix} --prefix={prefix} -C --with-boost={boost}'
+          './configure --prefix={prefix} -C --with-boost={boost}'
         ),
         ( 'https://shibboleth.net/downloads/service-provider/latest/', 
           'shibboleth-sp',
-          './configure --with-log4shib={prefix} --enable-apache-24 --with-apxs24={apxs} --prefix={prefix} --with-openssl={openssl} --with-boost={boost}'
+          './configure --enable-apache-24 --with-apxs24={apxs} --prefix={prefix} --with-boost={boost}'
         ),
     ]
     parser = argparse.ArgumentParser( )
