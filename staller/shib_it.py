@@ -17,35 +17,38 @@ from collections import defaultdict
 def main(argv=None):
     # https://wiki.shibboleth.net/confluence/display/SHIB2/NativeSPLinuxSourceBuild
     packages = [
+        ( 'https://curl.haxx.se/download.html',
+          'curl',
+          './configure --disable-static --with-openssl={openssl} --prefix={prefix}',
+        ),
         ( 'https://shibboleth.net/downloads/log4shib/latest/', 
           'log4shib', 
           './configure --disable-static --disable-doxygen --prefix={prefix}',
         ),
         ( 'https://xerces.apache.org/xerces-c/download.cgi', 
           'xerces-c',
-          './configure --prefix={prefix} --disable-netaccessor-curl --disable-transcoder-gnuiconv --with-curl={curl}',
+          './configure --prefix={prefix} --disable-netaccessor-curl --disable-transcoder-gnuiconv --with-curl={prefix}',
         ),
         ( 'https://santuario.apache.org/download.html', 
           'xml-security-c',
-          './configure --without-xalan --disable-static --prefix={prefix} --with-xerces={prefix} --with-openssl={openssl}',
+          './configure --without-xalan --disable-static --prefix={prefix} --with-openssl={openssl}',
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'xmltooling',
-          './configure --with-log4shib={prefix} --prefix={prefix} -C --with-boost={boost} --with-curl={curl}'
+          './configure --prefix={prefix} -C --with-boost={boost}'
         ),
         ( 'https://shibboleth.net/downloads/c++-opensaml/latest/', 
           'opensaml',
-          './configure --with-log4shib={prefix} --prefix={prefix} -C --with-boost={boost}'
+          './configure --prefix={prefix} -C --with-boost={boost}'
         ),
         ( 'https://shibboleth.net/downloads/service-provider/latest/', 
           'shibboleth-sp',
-          './configure --with-log4shib={prefix} --enable-apache-24 --with-apxs24={apxs} --prefix={prefix} --with-openssl={openssl} --with-boost={boost}'
+          './configure --enable-apache-24 --with-apxs24={apxs} --prefix={prefix} --with-boost={boost}'
         ),
     ]
     parser = argparse.ArgumentParser( )
     parser.add_argument('-p', '--prefix', required=True)
     parser.add_argument('--boost', required=True)
-    parser.add_argument('--curl', required=True)
     parser.add_argument('--openssl', required=True)
     parser.add_argument('--apxs', help='full path to apxs', required=True)
 
@@ -58,7 +61,6 @@ def main(argv=None):
     with_opts = {
         'prefix': argv.prefix,
         'boost': argv.boost,
-        'curl': argv.curl,
         'openssl': argv.openssl,
         'apxs': argv.apxs,
     }
@@ -71,7 +73,8 @@ def main(argv=None):
 
     keys = [ 
         'https://www.apache.org/dist/santuario/KEYS', 
-        'https://www.apache.org/dist/xerces/c/KEYS', 
+        'https://www.apache.org/dist/xerces/c/KEYS',
+        'https://daniel.haxx.se/mykey.asc'
     ]
 
     if argv.tempdir:
@@ -80,7 +83,6 @@ def main(argv=None):
 
     for (url, package, configure) in packages:
         config_command = configure.format(**with_opts)
-        print config_command
 
     tmp = tempfile.mkdtemp(prefix="shib_builder_")
     key_import(keys, tmp)
@@ -89,6 +91,7 @@ def main(argv=None):
 
     os.environ['CFLAGS'] = os.environ['CPPFLAGS'] = "-g -I {0}/include".format(argv.prefix)
     os.environ['LDFLAGS'] = "-L{0}/lib".format(argv.prefix)
+    os.environ['PKG_CONFIG_PATH'] = "{}/lib/pkgconfig".format(argv.prefix)
     resetldpath(argv.prefix)
     #resetldpath(argv.prefix, argv.other_prefix)
 
@@ -96,7 +99,7 @@ def main(argv=None):
         config_command = configure.format(**with_opts)
         print config_command
         # scraper looks at the "latest download" web page, finds the newest .tar.gz, 
-        # verfies MD5 checksum and and the pgp signature
+        # verfies sha-256 checksum and and the pgp signature
         # downloads verified package to `tmp` and returns the path to the .tar.gz
         archive = scraper(url, package, tmp)
         os.chdir(tmp)
@@ -120,6 +123,10 @@ def main(argv=None):
 
 
 def sanity_check_ldd(path):
+
+    class LddDuplicateException(Exception):
+        pass
+
     parse_ldd = re.compile('^\t(.*?)\\.')  # parse ldd outout
     d = defaultdict(bool)
     # look for duplicate libraries
@@ -129,7 +136,8 @@ def sanity_check_ldd(path):
                 break
             lib = parse_ldd.search(line).group(0)
             # http://youtu.be/SckD99B51IA?t=22s
-            assert not(lib in d), "dubious binary, ldd finds more than one {0}".format(lib)
+            if (lib in d):
+                raise LddDuplicateException("dubious binary, ldd finds more than one {0}".format(lib))
             d[lib] = True
     except OSError:
         # is this OSX? try running `otool`?

@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 setup(
     name = "staller",
-    version = "0.4.5",
+    version = "0.5.0",
     packages = find_packages(),
     install_requires = ['lxml', 'argparse'],
     # metadata for upload to PyPI
@@ -24,7 +24,7 @@ setup(
     }
 )
 
-# Copyright © 2014, Regents of the University of California
+# Copyright © 2018, Regents of the University of California
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
