@@ -123,6 +123,10 @@ def main(argv=None):
 
 
 def sanity_check_ldd(path):
+
+    class LddDuplicateException(Exception):
+        pass
+
     parse_ldd = re.compile('^\t(.*?)\\.')  # parse ldd outout
     d = defaultdict(bool)
     # look for duplicate libraries
@@ -132,7 +136,8 @@ def sanity_check_ldd(path):
                 break
             lib = parse_ldd.search(line).group(0)
             # http://youtu.be/SckD99B51IA?t=22s
-            assert not(lib in d), "dubious binary, ldd finds more than one {0}".format(lib)
+            if (lib in d):
+                raise LddDuplicateException("dubious binary, ldd finds more than one {0}".format(lib))
             d[lib] = True
     except OSError:
         # is this OSX? try running `otool`?

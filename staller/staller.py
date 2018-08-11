@@ -38,14 +38,18 @@ def scraper(url, package, tmp):
     return checked_archive(download_url, remote_sha256, pgp_url, tmp)
 
 def checked_archive(download_url, remote_sha256, pgp_url, tmp):
+
+    class ChecksumMismatchException(Exception):
+        pass
+
     archive = downloadChunks(download_url, tmp)
     checksum = sha256sum(archive)
     # make sure the checksum is correct
     print checksum
-    # TODO -- assert used wrong here
-    assert(checksum in remote_sha256)
+    if not(checksum in remote_sha256):
+        raise ChecksumMismatchException("checksum of {0} not found in {1}".format(download_url, remote_sha256))
     pgp_file = downloadChunks(pgp_url, tmp)
-    subprocess.check_call(["gpg", "--verify", pgp_file, archive ])
+    subprocess.check_call(["gpg", "--verify", pgp_file, archive])
     return archive
 
 def sha256sum(filename):
