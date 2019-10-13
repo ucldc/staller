@@ -42,6 +42,11 @@ usage: solr_it [-h] -p PREFIX -v VERSION [-t TEMPDIR] [-f]
 ## Install the 'staller
 
 ```
+pip install --upgrade https://github.com/ucldc/staller/archive/master.tar.gz
+```
+
+
+```
 pip install staller
 ```
 
