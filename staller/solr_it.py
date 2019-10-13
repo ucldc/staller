@@ -8,7 +8,7 @@ import tempfile
 # import gnupg
 import subprocess
 import shutil
-from staller import checked_archive, key_import
+from staller import checked_archive, key_import, downloadChunks
 
 def main(argv=None):
     parser = argparse.ArgumentParser( )
@@ -24,12 +24,16 @@ def main(argv=None):
         print "been done? use -f/--force to force rebuild"
         exit(0)
 
+    tmp = tempfile.mkdtemp(prefix="apache_solr_")
     # https://archive.apache.org/dist/lucene/solr/4.7.0/solr-4.7.0.tgz
 
     sbase = ''.join(['https://archive.apache.org/dist/lucene/solr/', argv.version, '/'])
-    skeys = ''.join([sbase, 'KEYS'])
+    #skeys = ''.join([sbase, 'KEYS'])
+    skeys = 'https://archive.apache.org/dist/lucene/solr/KEYS'
     download_url = ''.join([sbase, 'solr-', argv.version, '.tgz'])
-    md5_url = ''.join([download_url, '.md5'])
+    sha512_url = ''.join([download_url, '.sha512'])
+    sha512_file = downloadChunks(sha512_url, tmp)
+    remote_sha512 = open(sha512_file).read()
     pgp_url = ''.join([download_url, '.asc'])
 
     keys = [ skeys ]
@@ -37,12 +41,11 @@ def main(argv=None):
     if argv.tempdir:
         tempfile.tempdir = argv.tempdir
 
-    tmp = tempfile.mkdtemp(prefix="apache_solr_")
     key_import(keys, tmp)
     os.chdir(tmp)
     pp(tmp)
 
-    archive = checked_archive(download_url, md5_url, pgp_url, tmp)
+    archive = checked_archive(download_url, remote_sha512, pgp_url, tmp)
     pp(archive)
     os.chdir(argv.prefix)
     print subprocess.check_output(['tar', 'zxf', archive])

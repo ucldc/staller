@@ -17,9 +17,9 @@ def key_import(urls, tmp):
         subprocess.check_call(["gpg", "--import", keys])
 
 def scraper(url, package, tmp):
-    """find and validate source tar.gz with sha-256 and pgp signatures
-    searches for links to the 'package' on the 'url', downloads the .tar.gz, .tar.gz.sha256, and .tar.gz.asc
-    uses the .tar.gz.sha256 or metalink and the .tar.gz.asc to validate the .tar.gz
+    """find and validate source tar.gz with sha-512 and pgp signatures
+    searches for links to the 'package' on the 'url', downloads the .tar.gz, .tar.gz.sha512, and .tar.gz.asc
+    uses the .tar.gz.sha512 or metalink and the .tar.gz.asc to validate the .tar.gz
     returns the path to the .tar.gz file inside of 'tmp'
     """
     # print "%s %s" % ( url, package )
@@ -31,31 +31,31 @@ def scraper(url, package, tmp):
     if download_url.startswith('http://www.apache.org/dyn/closer'):
         doc2 = parse(urlopen(download_url)).getroot()
         download_url = doc2.xpath("//a[contains(@href,'%s')][1]/@href" % package, )[0]
-    sha256_url = [i for i in links if i.endswith(('tar.gz.sha256', 'metalink.cgi?curl=tar.gz'))][0]
-    sha256_file = downloadChunks(sha256_url, tmp)
-    remote_sha256 = open(sha256_file).read()
+    sha512_url = [i for i in links if i.endswith(('tar.gz.sha512', 'metalink.cgi?curl=tar.gz'))][0]
+    sha512_file = downloadChunks(sha512_url, tmp)
+    remote_sha512 = open(sha512_file).read()
     pgp_url = [i for i in links if i.endswith('tar.gz.asc')][0]
-    return checked_archive(download_url, remote_sha256, pgp_url, tmp)
+    return checked_archive(download_url, remote_sha512, pgp_url, tmp)
 
-def checked_archive(download_url, remote_sha256, pgp_url, tmp):
+def checked_archive(download_url, remote_sha512, pgp_url, tmp):
 
     class ChecksumMismatchException(Exception):
         pass
 
     archive = downloadChunks(download_url, tmp)
-    checksum = sha256sum(archive)
+    checksum = sha512sum(archive)
     # make sure the checksum is correct
     print checksum
-    if not(checksum in remote_sha256):
-        raise ChecksumMismatchException("checksum of {0} not found in {1}".format(download_url, remote_sha256))
+    if not(checksum in remote_sha512):
+        raise ChecksumMismatchException("my checksum of {0}: {2} does not match {1}".format(download_url, remote_sha512, checksum))
     pgp_file = downloadChunks(pgp_url, tmp)
     subprocess.check_call(["gpg", "--verify", pgp_file, archive])
     return archive
 
-def sha256sum(filename):
+def sha512sum(filename):
     # http://stackoverflow.com/a/7829658/1763984
     with open(filename, mode='rb') as f:
-        d = hashlib.sha256()
+        d = hashlib.sha512()
         for buf in iter(partial(f.read, 128), b''):
             d.update(buf)
     return d.hexdigest()
